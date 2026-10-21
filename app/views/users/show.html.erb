@@ -1,0 +1,66 @@
+<%# this view houses the code for the user profile pages
+    @owner is set via the show method in users_controller.rb %>
+
+<% content_for :title, "#{@user.username}'s bookshelf" %>
+
+<header class="profile-head">
+  <div class="page-head">
+    <h1><%= @user.username %></h1>
+    <% if @owner %>
+      <%= link_to "Account settings", edit_user_registration_path, class: "button button-ghost button-small" %>
+    <% end %>
+  </div>
+  <p class="muted">On myBooks since <%= @user.created_at.strftime("%B %Y") %></p>
+
+  <%#    show user stats    %>
+  <dl class="facts">
+    <div><dt>Finished</dt><dd><%= @counts["finished"].to_i %></dd></div>
+    <div><dt>Reading now</dt><dd><%= @counts["reading"].to_i %></dd></div>
+    <div><dt>To read</dt><dd><%= @counts["to_read"].to_i %></dd></div>
+    <div>
+      <dt>Average rating</dt>
+      <dd><%= @average_rating ? "#{@average_rating} of 5" : "None yet" %></dd>
+    </div>
+  </dl>
+
+  <% unless @owner %>
+    <p class="hint">You're seeing the books this reader chose to share.</p>
+  <% end %>
+</header>
+
+<nav class="tabs" aria-label="Filter by status">
+  <%= link_to "All (#{@total})", user_path(@user), aria: { current: (@status.nil? ? "page" : nil) } %>
+  <% UserBook::STATUS_LABELS.each do |key, label| %>
+    <%= link_to "#{label} (#{@counts[key].to_i})", user_path(@user, status: key),
+          aria: { current: (@status == key ? "page" : nil) } %>
+  <% end %>
+</nav>
+
+<% if @entries.any? %>
+  <ul class="entry-grid">
+    <% @entries.each do |entry| %>
+      <li><%= render "user_books/card", entry: entry %></li>
+    <% end %>
+  </ul>
+<% elsif @owner %>
+  <p class="empty">
+    <%= @status ? "Nothing here yet." : "Your shelf is empty." %>
+    <%= link_to "Browse books", books_path %> or <%= link_to "find one on Open Library", new_book_import_path %>.
+  </p>
+<% else %>
+  <p class="empty">This reader hasn't shared any books here yet.</p>
+<% end %>
+
+<% if @owner && @picks.present? %>
+  <section class="section" aria-labelledby="picks-heading">
+    <div class="section-head">
+      <h2 id="picks-heading">Recommended for you</h2>
+      <%= link_to "See more", recommendations_path %>
+    </div>
+    <ul class="book-grid">
+      <% @picks.each do |pick| %>
+        <li><%= render "recommendations/pick", pick: pick %></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

@@ -1,0 +1,74 @@
+<% content_for :title, "#{@book.title} by #{@book.author}" %>
+
+<%# display the book alongside some facts about it, if provided %>
+<article class="book-page">
+  <div class="book-cover-col">
+    <%= cover_tag(@book, size: "L") %>
+  </div>
+
+  <div class="book-main">
+
+    <h1><%= @book.title %></h1>
+    <p class="byline">by <%= @book.author %></p>
+
+    <dl class="facts">
+      <% if @book.year %>
+        <div><dt>Year</dt><dd><%= @book.year %></dd></div>
+      <% end %>
+      <% if @book.page_count %>
+        <div><dt>Pages</dt><dd><%= @book.page_count %></dd></div>
+      <% end %>
+      <% if @book.genre.present? %>
+        <div><dt>Genre</dt><dd><%= @book.genre %></dd></div>
+      <% end %>
+      <div><dt>On shelves</dt><dd><%= @shelf_count %></dd></div>
+
+      <%# average rating is defined inside models/book.rb %>
+      <% if @average_rating %>
+        <div><dt>Average rating</dt><dd><%= stars(@average_rating.round) %> <%= @average_rating %></dd></div>
+      <% end %>
+    </dl>
+    <%# only books added from Open Library have a work key
+        target: blank opens the page in a new tab and noopener
+        stops it from modifying the current page %>
+    <% if @book.open_library_url %>
+      <p class="hint"><%= link_to "View on Open Library", @book.open_library_url, rel: "noopener", target: "_blank" %></p>
+    <% end %>
+
+    <% if @book.description.present? %>
+      <div class="prose"><%= simple_format(@book.description) %></div>
+    <% end %>
+
+    <%# logged in/logged out users are handled through the panel %>
+    <%= render "user_books/panel", book: @book, entry: @entry %>
+
+    <%# admins may edit or delete books through their individual pages %>
+    <% if current_user&.admin? %>
+      <p class="admin-links">
+        <%= link_to "Edit this book", edit_book_path(@book) %>
+        <%= button_to "Delete this book", @book, method: :delete, class: "link-button danger",
+              form: { data: { turbo_confirm: "Delete this book and every shelf entry for it?" } } %>
+      </p>
+    <% end %>
+  </div>
+</article>
+
+<%# display notes at the bottom of the page
+    books_controller.rb limits this to 10
+    notes per book (see show method) %>
+<% if @notes.any? %>
+  <section class="section" aria-labelledby="notes-heading">
+    <h2 id="notes-heading">Notes from readers</h2>
+    <ul class="notes">
+      <% @notes.each do |note| %>
+        <li>
+          <p class="note-head">
+            <%= link_to note.user.username, user_path(note.user) %>
+            <% if note.rating %><%= stars(note.rating) %><% end %>
+          </p>
+          <%= simple_format(note.user_comment) %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

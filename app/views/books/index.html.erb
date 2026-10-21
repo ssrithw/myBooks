@@ -1,0 +1,42 @@
+<% content_for :title, "Books" %>
+
+<div class="page-head">
+  <h1>Books</h1>
+  <div class="actions">
+    <% if user_signed_in? %>
+      <%= link_to "Add a book from Open Library", new_book_import_path(q: @query.presence), class: "button button-small" %>
+    <% end %>
+    <% if current_user&.admin? %>
+      <%= link_to "Type one in", new_book_path, class: "button button-ghost button-small" %>
+    <% end %>
+  </div>
+</div>
+
+<%= form_with url: books_path, method: :get, class: "search" do |form| %>
+  <%= form.label :q, "Search by title, author or genre", class: "sr-only" %>
+  <%= form.search_field :q, value: @query, placeholder: "Search by title, author or genre" %>
+  <%= form.submit "Search", name: nil, class: "button" %>
+<% end %>
+
+<% if @books.any? %>
+  <ul class="book-grid">
+    <% @books.each do |book| %>
+      <li><%= render "books/card", book: book %></li>
+    <% end %>
+  </ul>
+<% elsif @query.present? %>
+  <p class="empty">No books in the catalogue match "<%= @query %>".</p>
+<% else %>
+  <p class="empty">No books have been added yet.</p>
+<% end %>
+
+<% if @query.present? %>
+  <p class="hint not-here">
+    Not the book you wanted?
+    <% if user_signed_in? %>
+      <%= link_to "Search Open Library for \"#{@query}\"", new_book_import_path(q: @query) %> and add it!
+    <% else %>
+      <%= link_to "Log in", new_user_session_path %> to add it from Open Library.
+    <% end %>
+  </p>
+<% end %>

@@ -1,0 +1,6 @@
+<%= link_to book_path(pick.book), class: "book-card" do %>
+  <%= cover_tag(pick.book, size: "M", alt: "") %>
+  <span class="book-card-title"><%= pick.book.title %></span>
+  <span class="book-card-author"><%= pick.book.author %></span>
+  <span class="pick-reason<%= ' pick-reason-personal' if pick.personal? %>"><%= pick.reason %></span>
+<% end %>

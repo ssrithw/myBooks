@@ -1,0 +1,32 @@
+<%# Log in form. Authentication is handled by Devise %>
+
+<% content_for :title, "Log in" %>
+
+<div class="form-narrow">
+  <h1>Log in</h1>
+
+  <%= form_with(model: resource, as: resource_name, url: session_path(resource_name), class: "stack") do |form| %>
+    <div class="field">
+      <%= form.label :email %>
+      <%= form.email_field :email, required: true, autocomplete: "email", autofocus: true %>
+    </div>
+    <div class="field">
+      <%= form.label :password %>
+      <%= form.password_field :password, required: true, autocomplete: "current-password" %>
+    </div>
+
+    <%# Remember login checkbox %>
+    <% if devise_mapping.rememberable? %>
+      <div class="check">
+        <%= form.checkbox :remember_me %>
+        <%= form.label :remember_me, "Keep me logged in" %>
+      </div>
+    <% end %>
+
+    <div class="actions">
+      <%= form.submit "Log in", class: "button" %>
+    </div>
+  <% end %>
+
+  <%= render "devise/shared/links" %>
+</div>

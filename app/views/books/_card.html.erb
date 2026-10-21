@@ -1,0 +1,5 @@
+<%= link_to book_path(book), class: "book-card" do %>
+  <%= cover_tag(book, size: "M", alt: "") %>
+  <span class="book-card-title"><%= book.title %></span>
+  <span class="book-card-author"><%= book.author %></span>
+<% end %>

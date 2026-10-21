@@ -1,0 +1,109 @@
+<% content_for :title, "Admin Dashboard" %>
+
+<div class="page-head">
+  <h1>Admin dashboard</h1>
+  <div class="actions">
+    <%= link_to "Add a book", new_book_path, class: "button button-small" %>
+    <% if @stats[:missing_covers].positive? %>
+      <%= button_to "Look up #{@stats[:missing_covers]} missing #{'cover'.pluralize(@stats[:missing_covers])}",
+            admin_covers_path, method: :post, class: "button button-ghost button-small" %>
+    <% end %>
+  </div>
+</div>
+
+<%# ============ Quick statistics ============ %>
+
+<dl class="facts">
+  <div><dt>Readers</dt><dd><%= @stats[:readers] %></dd></div>
+  <div><dt>Books</dt><dd><%= @stats[:books] %></dd></div>
+  <div><dt>Shelf entries</dt><dd><%= @stats[:shelf_entries] %></dd></div>
+  <div><dt>Books without a cover</dt><dd><%= @stats[:missing_covers] %></dd></div>
+</dl>
+
+<%# ============ Users ============ %>
+
+<section class="section" aria-labelledby="users-heading">
+  <h2 id="users-heading">Readers</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th scope="col">Username</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Books</th><th scope="col">Joined</th><th scope="col">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><%= link_to user.username, user_path(user) %></td>
+            <td><%= user.email %></td>
+            <td><%= user.admin? ? "Admin" : "Standard" %></td>
+            <td><%= user.shelf_count %></td>
+            <td><%= l(user.created_at.to_date, format: :long) %></td>
+            <td>
+              <% if user == current_user %>
+                <span class="muted">You</span>
+              <% else %>
+                <div class="cell-actions">
+                  <%= button_to(user.admin? ? "Remove admin" : "Make admin", admin_user_path(user),
+                        method: :patch, class: "link-button") %>
+                  <%= button_to "Delete", admin_user_path(user), method: :delete, class: "link-button danger",
+                        form: { data: { turbo_confirm: "Delete #{user.username} and their shelf?" } } %>
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%# ============ Books ============ %>
+
+<section class="section" aria-labelledby="books-heading">
+  <h2 id="books-heading">Books</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th scope="col">Cover</th><th scope="col">Title</th><th scope="col">On shelves</th><th scope="col">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% @books.each do |book| %>
+          <tr>
+            <td class="thumb"><%= cover_tag(book, size: "S", alt: "") %></td>
+            <td>
+              <%= link_to book.title, book_path(book) %><br>
+              <span class="muted"><%= book.author %><%= book.cover_id ? "" : ", no cover yet" %></span>
+            </td>
+            <td><%= book.shelf_count %></td>
+            <td>
+              <div class="cell-actions">
+                <%= link_to "Edit", edit_book_path(book) %>
+                <%= button_to "Delete", book_path(book), method: :delete, class: "link-button danger",
+                      form: { data: { turbo_confirm: "Delete #{book.title} and every shelf entry for it?" } } %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%# ============ View user activity ============ %>
+
+<section class="section" aria-labelledby="activity-heading">
+  <h2 id="activity-heading">Recent shelf activity</h2>
+  <% if @activity.any? %>
+    <ul class="activity">
+      <% @activity.each do |entry| %>
+        <li>
+          <%= link_to entry.user.username, user_path(entry.user) %>
+          marked <%= link_to entry.book.title, book_path(entry.book) %>
+          as <%= entry.status_label.downcase %>
+          <span class="muted">(<%= time_ago_in_words(entry.updated_at) %> ago)</span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="empty">Nothing has been shelved yet.</p>
+  <% end %>
+</section>

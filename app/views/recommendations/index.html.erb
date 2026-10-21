@@ -1,0 +1,25 @@
+<% content_for :title, "Recommended for you" %>
+
+<div class="page-head">
+  <h1>Recommended for you</h1>
+</div>
+
+<% unless @personalised %>
+  <p class="callout">
+    Rate a few books on <%= link_to "your shelf", user_path(current_user) %> and these picks will follow
+    the genres you rate highest. Until then, here are the books other readers rate best.
+  </p>
+<% end %>
+
+<% if @picks.any? %>
+  <ul class="book-grid">
+    <% @picks.each do |pick| %>
+      <li><%= render "recommendations/pick", pick: pick %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="empty">
+    You've shelved every book in the catalogue.
+    <%= link_to "Add more from Open Library", new_book_import_path %>.
+  </p>
+<% end %>

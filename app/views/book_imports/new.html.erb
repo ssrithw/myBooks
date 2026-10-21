@@ -1,0 +1,44 @@
+<% content_for :title, "Add a book from Open Library" %>
+
+<div class="page-head">
+  <h1>Add a book</h1>
+</div>
+
+<p class="lead">Search Open Library's catalogue of millions of books, then add the one you want.</p>
+
+<%= form_with url: new_book_import_path, method: :get, class: "search" do |form| %>
+  <%= form.label :q, "Title, author or ISBN", class: "sr-only" %>
+  <%= form.search_field :q, value: @query, placeholder: "Title, author or ISBN", autofocus: @query.blank?, required: true %>
+  <%= form.submit "Search Open Library", name: nil, class: "button" %>
+<% end %>
+
+<% if @error %>
+  <p class="flash flash-alert" role="alert"><%= @error %></p>
+<% elsif @query.present? && @results.empty? %>
+  <p class="empty">Open Library has nothing for "<%= @query %>". Check the spelling or try the author's name.</p>
+<% elsif @results.any? %>
+  <p class="hint results-count"><%= pluralize(@results.size, "result") %> for "<%= @query %>"</p>
+
+  <ul class="book-grid">
+    <% @results.each do |result| %>
+      <% book     = Book.new(result.slice(:title, :author, :cover_id)) %>
+      <% existing = @existing[result[:open_library_key]] %>
+      <li class="result-card">
+        <%= cover_tag(book, size: "M", alt: "") %>
+        <span class="book-card-title"><%= result[:title] %></span>
+        <span class="book-card-author"><%= result[:author] %><%= ", #{result[:year]}" if result[:year] %></span>
+        <% if result[:genre] %>
+          <span class="badge"><%= result[:genre] %></span>
+        <% end %>
+
+        <% if existing %>
+          <%= link_to "Already here: open it", book_path(existing), class: "button button-ghost button-small" %>
+        <% elsif result[:open_library_key] %>
+          <%= button_to "Add to catalogue", book_import_path,
+                params: { key: result[:open_library_key], q: @query },
+                class: "button button-small", form: { class: "result-add" } %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

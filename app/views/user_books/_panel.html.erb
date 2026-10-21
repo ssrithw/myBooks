@@ -1,0 +1,68 @@
+<%# this partial displays either a sign up/log in panel or
+    the form used to add a book to a user's shelf %>
+
+<section class="panel" aria-labelledby="shelf-heading">
+  <h2 id="shelf-heading">Your shelf</h2>
+
+  <% if user_signed_in? %>
+    <%= form_with model: entry, url: (entry.persisted? ? user_book_path(entry) : user_books_path), class: "stack",
+          data: { controller: "rating-gate", rating_gate_rateable_value: UserBook::RATEABLE_STATUSES } do |form| %>
+      <% unless entry.persisted? %>
+        <%= form.hidden_field :book_id, value: book.id %> 
+      <% end %> 
+
+      <div class="row">
+        <div class="field">
+          <%= form.label :status, "Status" %>
+          <%= form.select :status, UserBook::STATUS_LABELS.map { |key, label| [ label, key ] }, {},
+                data: { rating_gate_target: "status", action: "rating-gate#sync" } %>
+        </div>
+        <div class="field">
+          <%= form.label :rating, "Rating" %>
+          <%= form.select :rating, UserBook::RATING_RANGE.map { |n| [ "#{n} of 5", n ] }, { include_blank: "No rating" },
+                disabled: !entry.rateable?, aria: { describedby: "rating-hint" },
+                data: { rating_gate_target: "rating" } %>
+          <p id="rating-hint" class="hint" data-rating-gate-target="hint" <%= "hidden" if entry.rateable? %>>
+            You can rate a book once you've finished or abandoned it.
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <%= form.label :start, "Started" %>
+          <%= form.date_field :start %>
+        </div>
+        <div class="field">
+          <%= form.label :finish, "Finished" %>
+          <%= form.date_field :finish %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= form.label :user_comment, "Your note" %>
+        <%= form.textarea :user_comment, rows: 4, maxlength: UserBook::MAX_COMMENT_LENGTH %>
+      </div>
+
+      <div class="check">
+        <%= form.checkbox :is_public %>
+        <%= form.label :is_public, "Show on my public profile" %>
+      </div>
+
+      <div class="actions">
+        <%= form.submit(entry.persisted? ? "Save changes" : "Add to shelf", class: "button") %>
+      </div>
+    <% end %>
+
+    <% if entry.persisted? %>
+      <%= button_to "Remove from shelf", user_book_path(entry), method: :delete,
+            class: "button button-ghost button-small danger",
+            form: { data: { turbo_confirm: "Remove this book from your shelf?" } } %>
+    <% end %>
+  <% else %>
+    <p>
+      <%= link_to "Log in", new_user_session_path %> or
+      <%= link_to "create an account", new_user_registration_path %> to add this book to your shelf.
+    </p>
+  <% end %>
+</section>

@@ -1,0 +1,50 @@
+<%= form_with(model: book, class: "stack form-wide") do |form| %>
+  <%= render "shared/errors", record: book %>
+
+  <div class="row">
+    <div class="field">
+      <%= form.label :title %>
+      <%= form.text_field :title, required: true %>
+    </div>
+    <div class="field">
+      <%= form.label :author %>
+      <%= form.text_field :author, required: true %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :genre %>
+    <%= form.text_field :genre, list: "genre-options" %>
+    <datalist id="genre-options">
+      <% Genre::ALL.each do |name| %><option value="<%= name %>"><% end %>
+    </datalist>
+    <p class="hint">Recommendations match books by genre, so pick one from the list where you can.</p>
+  </div>
+
+  <div class="field">
+    <%= form.label :description %>
+    <%= form.textarea :description, rows: 5 %>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <%= form.label :year %>
+      <%= form.number_field :year %>
+    </div>
+    <div class="field">
+      <%= form.label :page_count, "Pages" %>
+      <%= form.number_field :page_count, min: 1 %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :cover_id, "Open Library cover id" %>
+    <%= form.number_field :cover_id, min: 1 %>
+    <p class="hint">Leave this blank to let the app look the cover up by title and author. Covers load from covers.openlibrary.org.</p>
+  </div>
+
+  <div class="actions">
+    <%= form.submit class: "button" %>
+    <%= link_to "Cancel", (book.persisted? ? book_path(book) : books_path), class: "button button-ghost" %>
+  </div>
+<% end %>

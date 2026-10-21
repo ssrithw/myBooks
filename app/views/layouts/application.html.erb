@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <title><%= content_for(:title) || "My Books" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="My Books">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Fonts: Big Shoulders Display (headings, nav) and Courier Prime (buttons, labels) %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Courier+Prime:wght@400;700&display=swap">
+
+    <%# Apply a saved colour theme before first paint so the page doesn't flash %>
+    <%= javascript_tag nonce: true do %>
+      try { var t = localStorage.getItem("theme"); if (t === "dark") { document.documentElement.dataset.theme = t; } } catch (e) {}
+    <% end %>
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-controller="theme">
+      <div class="header-bar"></div>
+      <div class="header-wedge" aria-hidden="true"></div>
+
+      <%= link_to root_path, class: "logo", aria: { label: "myBooks home" } do %>
+        <span class="logo-text">my<br>Books</span>
+      <% end %>
+
+      <div class="header-inner">
+        <nav class="nav" aria-label="Main">
+          <%= link_to "Books", books_path %>
+          <%= link_to "Readers", users_path %>
+          <% if user_signed_in? %>
+            <%= link_to "For you", recommendations_path %>
+            <%= link_to "My shelf", user_path(current_user) %>
+            <% if current_user.admin? %>
+              <%= link_to "Admin", admin_root_path %>
+            <% end %>
+            <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "link-button" %>
+          <% else %>
+            <%= link_to "Log in", new_user_session_path %>
+            <%= link_to "Sign up", new_user_registration_path, class: "button button-small" %>
+          <% end %>
+        </nav>
+
+        <div class="theme-switch" role="group" aria-label="Colour theme">
+          <% %w[light dark].each do |name| %>
+            <button type="button" data-theme-target="button" data-action="theme#set"
+                    data-theme-name-param="<%= name %>" aria-pressed="<%= name == 'light' %>"><%= name %></button>
+          <% end %>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="container">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        Book data and covers from the <a href="https://openlibrary.org">Open Library</a>.
+      </div>
+    </footer>
+  </body>
+</html>

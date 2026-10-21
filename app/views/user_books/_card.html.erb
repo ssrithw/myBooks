@@ -1,0 +1,9 @@
+<%= link_to book_path(entry.book), class: "book-card" do %>
+  <%= cover_tag(entry.book, size: "M", alt: "") %>
+  <span class="book-card-title"><%= entry.book.title %></span>
+  <span class="book-card-author"><%= entry.book.author %></span>
+  <span class="book-card-meta">
+    <span class="badge badge-<%= entry.status %>"><%= entry.status_label %></span>
+    <% if entry.rating %><%= stars(entry.rating) %><% end %>
+  </span>
+<% end %>

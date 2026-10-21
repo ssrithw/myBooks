@@ -1,0 +1,85 @@
+<% content_for :title, "myBooks: track the books you've read!" %>
+
+<% showcase = @hero_books.first(2) %>
+
+<% if showcase.any? %>
+  <section class="showcase" aria-label="Newest books">
+    <% showcase.each_with_index do |book, index| %>
+      <figure class="showcase-item">
+        <%= link_to book_path(book) do %>
+          <%= cover_tag(book, size: "L", alt: "") %>
+          <figcaption>
+            <span class="showcase-title"><%= book.title %></span>
+            <span class="showcase-author"><%= book.author %></span>
+          </figcaption>
+        <% end %>
+        <% if index == showcase.size - 1 %>
+          <%= link_to "Browse all books", books_path, class: "button button-ghost button-arrow" %>
+        <% end %>
+      </figure>
+    <% end %>
+  </section>
+<% end %>
+
+<section class="intro">
+  <h1>Your reading, on one shelf.</h1>
+  <p class="lead">
+    Share the books you love with the world!
+    Rate each book, write a note, and choose which ones you want to share.
+  </p>
+  <div class="actions">
+    <% if user_signed_in? %>
+      <%= link_to "Open my shelf", user_path(current_user), class: "button" %>
+    <% else %>
+      <%= link_to "Create your shelf", new_user_registration_path, class: "button" %>
+      <%= link_to "Log in", new_user_session_path, class: "button button-ghost" %>
+    <% end %>
+  </div>
+</section>
+
+<% if @picks.present? %>
+  <section class="section" aria-labelledby="picks-heading">
+    <div class="section-head">
+      <h2 id="picks-heading">Recommended for you</h2>
+      <%= link_to "See more", recommendations_path %>
+    </div>
+    <ul class="book-grid">
+      <% @picks.each do |pick| %>
+        <li><%= render "recommendations/pick", pick: pick %></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section class="section" aria-labelledby="recent-heading">
+  <h2 id="recent-heading" class="sr-only">Recently added</h2>
+  <div class="tabs">
+    <span class="tab-current">Recently added</span>
+    <%= link_to "All books", books_path %>
+  </div>
+
+  <% if @recent_books.any? %>
+    <ul class="book-grid">
+      <% @recent_books.each do |book| %>
+        <li><%= render "books/card", book: book %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="empty">No books have been added yet.</p>
+  <% end %>
+</section>
+
+<section class="section features">
+  <div>
+    <h3>Save any book</h3>
+    <p>Have a look through our catalogue, or add any book from the Open Library!</p>
+  </div>
+  <div>
+    <h3>Track as you read</h3>
+    <p>Track your start and finish dates, rate the book 5 stars or write a short note.</p>
+  </div>
+  <div>
+    <h3>Share what you choose</h3>
+    <p>Every entry is private until you decide to share it.</p>
+  </div>
+</section>
