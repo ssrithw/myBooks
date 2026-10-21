@@ -110,11 +110,3 @@ ruby bin/rails db:seed
 ```ruby bin/rails server```
 
 By default, the application opens in http://localhost:3000 on your browser.
-
-## Miscellaneous
-
-By default, all seeded users share the same password (password123). Admin account details are as follows:
-
-username: admin
-email: admin@example.com
-password: password123
